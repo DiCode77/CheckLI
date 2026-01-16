@@ -5,7 +5,7 @@ set(SRC "${CMAKE_SOURCE_DIR}/src")
 
 include_directories(${PROJECT_NAME} PRIVATE ${SRC})
 
-find_package(cpr REQUIRED)
+find_package(CURL REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES "${SRC}/*.hpp" "${SRC}/*.cpp")
 
@@ -15,5 +15,5 @@ source_group("src"  FILES ${SRC_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
-target_link_libraries(${PROJECT_NAME} cpr::cpr)
+target_link_libraries(${PROJECT_NAME} cpr::cpr CURL::libcurl)
 

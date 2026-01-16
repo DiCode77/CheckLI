@@ -1,5 +1,5 @@
 [requires]
-cpr/1.14.1
+libcurl/8.17.0
 
 [generators]
 CMakeDeps
