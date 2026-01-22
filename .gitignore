@@ -1,2 +1,4 @@
 .DS_Store
 ActiveLight/.DS_Store
+ActiveLight/CMakeUserPresets.json
+ActiveLight/build/
