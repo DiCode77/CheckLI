@@ -22,6 +22,8 @@ constexpr const char32_t FIND_IF_GROUPS[] = { 0x3B, 0x26, 0x26, 0x26, 0x3B, 0x00
 constexpr const char32_t FIND_IF_NEXT[]   = { 0x2D, 0x3E, 0x00 };
 constexpr int            MAX_PARAMETERS   = 10;
 
+constexpr unsigned long  ACNPOS           = ~0;
+
 typedef struct{
     long           condition;
     std::u32string date;
@@ -37,9 +39,10 @@ typedef struct{
 
 class AcLight{
 public:
-    using ulong_t  = unsigned long;
-    using vecstr_t = std::vector<std::u32string>;
-    using un_map_t = std::unordered_map<std::u32string, std::vector<PLACE>>;
+    using ulong_t     = unsigned long;
+    using vecstr_t    = std::vector<std::u32string>;
+    using un_map_t    = std::unordered_map<std::u32string, std::vector<PLACE>>;
+    using vac_place_t = std::vector<PLACE>;
     
 private:
     int      error;
@@ -59,6 +62,12 @@ public:
         }
     }
     
+    const vac_place_t getStruct(std::u32string str){
+        if (this->um_data.contains(str)){
+            return this->um_data[str];
+        }
+        return {};
+    }
     
 private:
     bool IsMakeRequest(const char*, std::u32string&, const long=10L);
