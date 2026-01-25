@@ -35,16 +35,15 @@ bool AcLight::IsMakeRequest(const char *API, std::u32string &response, const lon
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
             curl_easy_cleanup(curl);
             
-            if (code != 200){
-                return false;
-            }
-            else{
+            if (code == 200 && !data.empty()){
                 response.assign(utf8::utf8to32(data));
+                this->SetErrorStatus(AC_INFO::AC_OK);
                 return true;
             }
         }
     }
     
+    this->SetErrorStatus(AC_INFO::AC_ERROR_REQUEST);
     curl_easy_cleanup(curl);
     return false;
 }
@@ -59,28 +58,32 @@ void AcLight::DevideIntoGroup(vecstr_t &inVec, const std::u32string &inData){
         
         inVec.emplace_back(inData, start, end - start);
     }
+    this->SetErrorStatus((inVec.empty()) ? AC_INFO::AC_ERROR_PARSE : AC_INFO::AC_OK);
 }
 
 void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
-    std::ranges::for_each(inVec.begin(), inVec.end(), [&inData, this](const std::u32string &str32){
-        ulong_t        start  = 0;
-        ulong_t        end    = 0;
-        ulong_t        index  = 0;
-        PLACE          lig{};
-        std::u32string city;
-        ulong_t        size_f = std::u32string(FIND_IF_GROUPS).size();
-        
-        while ((start = std::u32string(str32).find(FIND_IF_GROUPS, end)) != std::u32string::npos && index < MAX_PARAMETERS) {
-            end = std::u32string(str32).find(FIND_IF_GROUPS, start +1);
+    if (isError() == AC_INFO::AC_OK){
+        std::ranges::for_each(inVec.begin(), inVec.end(), [&inData, this](const std::u32string &str32){
+            ulong_t        start  = 0;
+            ulong_t        end    = 0;
+            ulong_t        index  = 0;
+            PLACE          lig{};
+            std::u32string city;
+            ulong_t        size_f = std::u32string(FIND_IF_GROUPS).size();
             
-            std::u32string data = std::u32string(str32, start + size_f, end - (start + size_f));
-            std::u32string res  = this->SetDataStructs(index++, lig, data);
-            if (!res.empty()){
-                city = res;
+            while ((start = std::u32string(str32).find(FIND_IF_GROUPS, end)) != std::u32string::npos && index < MAX_PARAMETERS) {
+                end = std::u32string(str32).find(FIND_IF_GROUPS, start +1);
+                
+                std::u32string data = std::u32string(str32, start + size_f, end - (start + size_f));
+                std::u32string res  = this->SetDataStructs(index++, lig, data);
+                if (!res.empty()){
+                    city = res;
+                }
             }
-        }
-        inData[city].push_back(lig);
-    });
+            inData[city].push_back(lig);
+        });
+        this->SetErrorStatus((inData.empty()) ? AC_INFO::AC_ERROR_PARSE : AC_INFO::AC_OK);
+    }
 }
 
 std::u32string AcLight::SetDataStructs(const ulong_t &ix, PLACE &d, const std::u32string &s){
@@ -152,4 +155,8 @@ std::u32string AcLight::RemExtChar(std::u32string cstr){
     }
     
     return cstr;
+}
+
+void AcLight::SetErrorStatus(const AC_INFO st){
+    this->error = st;
 }
