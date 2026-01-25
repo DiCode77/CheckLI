@@ -107,8 +107,49 @@ std::u32string AcLight::DiBeFiel(const std::u32string &str, std::u32string &inf)
     ulong_t sz = std::u32string(FIND_IF_NEXT).size();
     
     if (en != std::u32string::npos){
-        inf.append(str, 0, en -1);
-        res.append(str, en + sz, str.size());
+        inf.assign(this->RemExtChar(std::u32string(str, 0, en)));
+        res.assign(this->RemExtChar(std::u32string(str, en + sz, str.size())));
     }
+    
     return res;
+}
+
+
+std::u32string AcLight::RemExtChar(std::u32string cstr){
+    const std::vector<char32_t> svec = { U' ', U'-', U',' };
+    
+    auto lm = [&svec](const char32_t ch){
+        for (const char32_t &s : svec){
+            if (s == ch){
+                return true;
+            }
+        }
+        return false;
+    };
+    
+    // This block of code removes extra characters at the beginning of a line.
+    while (!cstr.empty()){
+        auto it = cstr.begin();
+        
+        if (lm(*it)){
+            cstr.erase(it);
+        }
+        else{
+            break;
+        }
+    }
+    
+    // This block of code removes extra characters at the end of a line.
+    while (!cstr.empty()) {
+        auto it = cstr.rbegin();
+        
+        if (lm(*it)){
+            cstr.erase(std::next(it).base());
+        }
+        else{
+            break;
+        }
+    }
+    
+    return cstr;
 }
