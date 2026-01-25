@@ -69,12 +69,29 @@ public:
         return {};
     }
     
+    void showAllСities(){
+        if (!this->um_data.empty()){
+            for (const auto &[key, val] : this->um_data){
+                printf("->%s<-\n", utf8::utf32to8(key).c_str());
+            }
+        }
+    }
+    
+    void showAllStreets(std::u32string city){
+        if (!this->um_data.empty() && this->um_data.contains(city)){
+            for (ulong_t i = 0; i < this->um_data[city].size(); i++){
+                printf("->%s<-\n", utf8::utf32to8(this->um_data[city].at(i).street).c_str());
+            }
+        }
+    }
+    
 private:
     bool IsMakeRequest(const char*, std::u32string&, const long=10L);
     void DevideIntoGroup(vecstr_t&, const std::u32string&);
     void BreakDownTheLine(const vecstr_t&, un_map_t&);
     std::u32string SetDataStructs(const ulong_t&, PLACE&, const std::u32string&);
     std::u32string DiBeFiel(const std::u32string&, std::u32string&);
+    std::u32string RemExtChar(std::u32string);
 };
 
 #endif /* AcLight_hpp */
