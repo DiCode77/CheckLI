@@ -62,7 +62,7 @@ void AcLight::DevideIntoGroup(vecstr_t &inVec, const std::u32string &inData){
 }
 
 void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
-    if (isError() == AC_INFO::AC_OK){
+    if (this->isStatus() == AC_INFO::AC_OK){
         std::ranges::for_each(inVec.begin(), inVec.end(), [&inData, this](const std::u32string &str32){
             ulong_t        start  = 0;
             ulong_t        end    = 0;

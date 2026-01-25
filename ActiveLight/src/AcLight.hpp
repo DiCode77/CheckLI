@@ -31,6 +31,11 @@ enum class AC_INFO{
     AC_ERROR_PARSE
 };
 
+enum class AC_BEHAVIOR{ // tested.
+    NONE,
+    UPDATE
+};
+
 typedef struct{
     long           condition;
     std::u32string date;
@@ -61,21 +66,49 @@ public:
         this->error = AC_INFO::AC_NONE;
     }
     
+    // Test function is still being tested.
+    AcLight(AC_BEHAVIOR) : AcLight(){ //
+        this->updRequest();
+    }
+    
+    // updating status information.
     void updRequest(){
         std::u32string res;
-        if (this->IsMakeRequest(API_SVBOT, res) && this->isError() == AC_INFO::AC_OK){
+        if (this->IsMakeRequest(API_SVBOT, res) && this->isStatus() == AC_INFO::AC_OK){
             this->DevideIntoGroup(this->dtbt, res);
             this->BreakDownTheLine(this->dtbt, this->um_data);
         }
     }
     
-    const AC_INFO &isError() const{
+    // Here we return the status of the program.
+    const AC_INFO &isStatus() const{
         return this->error;
     }
     
-    const vac_place_t getStruct(std::u32string str){
-        if (this->um_data.contains(str)){
-            return this->um_data[str];
+    // Returns the total number of all fireflies.
+    const ulong_t getTotalCount() const{
+        return this->dtbt.size();
+    }
+    
+    // Returns the total number of all fireflies in the city.
+    const ulong_t getTotalCountOfCity(const std::u32string &city){
+        return (this->um_data.contains(city)) ? this->um_data[city].size() : 0;
+    }
+    
+    // Returns a list of all available fireflies in the city.
+    const vac_place_t getListByCity(const std::u32string &city){
+        if (!this->um_data.empty() && this->um_data.contains(city)){
+            return this->um_data[city];
+        }
+        return {};
+    }
+    
+    // Returns a specific structure in the city.
+    const PLACE getStructByCityOfIndex(const std::u32string &city, const ulong_t &ix){
+        if (!this->um_data.empty() && this->um_data.contains(city)){
+            if (this->um_data[city].size() > ix){
+                return this->um_data[city].at(ix);
+            }
         }
         return {};
     }
