@@ -24,6 +24,13 @@ constexpr int            MAX_PARAMETERS   = 10;
 
 constexpr unsigned long  ACNPOS           = ~0;
 
+enum class AC_INFO{
+    AC_NONE,
+    AC_OK,
+    AC_ERROR_REQUEST,
+    AC_ERROR_PARSE
+};
+
 typedef struct{
     long           condition;
     std::u32string date;
@@ -45,21 +52,25 @@ public:
     using vac_place_t = std::vector<PLACE>;
     
 private:
-    int      error;
+    AC_INFO  error;
     vecstr_t dtbt;
     un_map_t um_data;
     
 public:
     AcLight(){
-        this->error = 0;
+        this->error = AC_INFO::AC_NONE;
     }
     
     void updRequest(){
         std::u32string res;
-        if (this->IsMakeRequest(API_SVBOT, res) && !res.empty()){
+        if (this->IsMakeRequest(API_SVBOT, res) && this->isError() == AC_INFO::AC_OK){
             this->DevideIntoGroup(this->dtbt, res);
             this->BreakDownTheLine(this->dtbt, this->um_data);
         }
+    }
+    
+    const AC_INFO &isError() const{
+        return this->error;
     }
     
     const vac_place_t getStruct(std::u32string str){
@@ -92,6 +103,7 @@ private:
     std::u32string SetDataStructs(const ulong_t&, PLACE&, const std::u32string&);
     std::u32string DiBeFiel(const std::u32string&, std::u32string&);
     std::u32string RemExtChar(std::u32string);
+    void SetErrorStatus(const AC_INFO);
 };
 
 #endif /* AcLight_hpp */
