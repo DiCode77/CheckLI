@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <ranges>
+#include <chrono>
 
 constexpr const char     *API_SVBOT       = "https://api.svitlobot.in.ua/website/getChannelsForMap";
 constexpr const char32_t FIND_IF_QUANTY[] = { 0x2D, 0x31, 0x3B, 0x00 };
@@ -23,17 +24,14 @@ constexpr const char32_t FIND_IF_NEXT[]   = { 0x2D, 0x3E, 0x00 };
 constexpr int            MAX_PARAMETERS   = 10;
 
 constexpr unsigned long  ACNPOS           = ~0;
+const     long           REQUEST_DELAY    = 30; // Specify in seconds. Requests to the server are allowed to be sent no more than once every 30 seconds.
 
 enum class AC_INFO{
     AC_NONE,
     AC_OK,
+    AC_REQUEST_DELAY,
     AC_ERROR_REQUEST,
     AC_ERROR_PARSE
-};
-
-enum class AC_BEHAVIOR{ // tested.
-    NONE,
-    UPDATE
 };
 
 typedef struct{
@@ -55,28 +53,49 @@ public:
     using vecstr_t    = std::vector<std::u32string>;
     using un_map_t    = std::unordered_map<std::u32string, std::vector<PLACE>>;
     using vac_place_t = std::vector<PLACE>;
+    using time_w      = std::chrono::steady_clock::time_point;
     
 private:
     AC_INFO  error;
     vecstr_t dtbt;
     un_map_t um_data;
+    time_w   wait;
     
 public:
-    AcLight(){
-        this->error = AC_INFO::AC_NONE;
-    }
-    
-    // Test function is still being tested.
-    AcLight(AC_BEHAVIOR) : AcLight(){ //
-        this->updRequest();
-    }
+    AcLight() : error(AC_INFO::AC_NONE){}
     
     // updating status information.
     void updRequest(){
         std::u32string res;
-        if (this->IsMakeRequest(API_SVBOT, res) && this->isStatus() == AC_INFO::AC_OK){
-            this->DevideIntoGroup(this->dtbt, res);
-            this->BreakDownTheLine(this->dtbt, this->um_data);
+        time_w         time;
+        bool           isOk = false;
+        
+        if (time == this->GetWait()){
+            isOk = true;
+        }
+        else{
+            time = std::chrono::steady_clock::now();
+            
+            // The request delay algorithm is necessary to protect yourself from IP blocking by the server.
+            if (static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time - this->GetWait()).count()) > REQUEST_DELAY){
+                isOk = true;
+            }
+            else{
+                isOk = false;
+            }
+        }
+
+        if (isOk){
+            if (this->IsMakeRequest(API_SVBOT, res) && this->isStatus() == AC_INFO::AC_OK){
+                this->SetWait(std::chrono::steady_clock::now()); // We save the time of the last successful response.
+                this->clear(); // After each new request, you need to clear the data buffer to avoid collisions.
+
+                this->DevideIntoGroup(this->dtbt, res);
+                this->BreakDownTheLine(this->dtbt, this->um_data);
+            }
+        }
+        else{
+            this->SetErrorStatus(AC_INFO::AC_REQUEST_DELAY);
         }
     }
     
@@ -129,6 +148,12 @@ public:
         }
     }
     
+    void clear(){
+        this->SetErrorStatus(AC_INFO::AC_NONE);
+        this->dtbt.clear();
+        this->um_data.clear();
+    }
+    
 private:
     bool IsMakeRequest(const char*, std::u32string&, const long=10L);
     void DevideIntoGroup(vecstr_t&, const std::u32string&);
@@ -137,6 +162,8 @@ private:
     std::u32string DiBeFiel(const std::u32string&, std::u32string&);
     std::u32string RemExtChar(std::u32string);
     void SetErrorStatus(const AC_INFO);
+    void SetWait(const time_w&);
+    const time_w &GetWait() const;
 };
 
 #endif /* AcLight_hpp */

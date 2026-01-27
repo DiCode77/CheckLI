@@ -33,11 +33,11 @@ bool AcLight::IsMakeRequest(const char *API, std::u32string &response, const lon
         if (resc == CURLE_OK){
             ulong_t code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
-            curl_easy_cleanup(curl);
             
             if (code == 200 && !data.empty()){
                 response.assign(utf8::utf8to32(data));
                 this->SetErrorStatus(AC_INFO::AC_OK);
+                curl_easy_cleanup(curl);
                 return true;
             }
         }
@@ -159,4 +159,12 @@ std::u32string AcLight::RemExtChar(std::u32string cstr){
 
 void AcLight::SetErrorStatus(const AC_INFO st){
     this->error = st;
+}
+
+void AcLight::SetWait(const time_w &t){
+    this->wait = t;
+}
+
+const AcLight::time_w &AcLight::GetWait() const{
+    return this->wait;
 }
