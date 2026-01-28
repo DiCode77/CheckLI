@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <ranges>
 #include <chrono>
+#include <utility>
 
 constexpr const char     *API_SVBOT       = "https://api.svitlobot.in.ua/website/getChannelsForMap";
 constexpr const char32_t FIND_IF_QUANTY[] = { 0x2D, 0x31, 0x3B, 0x00 };
@@ -47,19 +48,27 @@ typedef struct{
     long           online; // ?
 } PLACE;
 
+struct IMP_PLE{
+    using vec_pir_t = std::vector<std::pair<std::u32string, std::u32string>>;
+    
+    vec_pir_t f_city{};
+    vec_pir_t f_group{};
+};
+
 class AcLight{
 public:
     using ulong_t     = unsigned long;
     using vecstr_t    = std::vector<std::u32string>;
     using un_map_t    = std::unordered_map<std::u32string, std::vector<PLACE>>;
-    using vac_place_t = std::vector<PLACE>;
-    using time_w      = std::chrono::steady_clock::time_point;
+    using vec_place_t = std::vector<PLACE>;
+    using time_w_t    = std::chrono::steady_clock::time_point;
     
 private:
     AC_INFO  error;
     vecstr_t dtbt;
     un_map_t um_data;
-    time_w   wait;
+    time_w_t wait;
+    IMP_PLE  imp_pl;
     
 public:
     AcLight() : error(AC_INFO::AC_NONE){}
@@ -67,7 +76,7 @@ public:
     // updating status information.
     void updRequest(){
         std::u32string res;
-        time_w         time;
+        time_w_t       time;
         bool           isOk = false;
         
         if (time == this->GetWait()){
@@ -115,7 +124,7 @@ public:
     }
     
     // Returns a list of all available fireflies in the city.
-    const vac_place_t getListByCity(const std::u32string &city){
+    const vec_place_t getListByCity(const std::u32string &city){
         if (!this->um_data.empty() && this->um_data.contains(city)){
             return this->um_data[city];
         }
@@ -154,6 +163,14 @@ public:
         this->um_data.clear();
     }
     
+    void setCorrectCityNames(IMP_PLE::vec_pir_t (*p)()){
+        this->imp_pl.f_city = p();
+    }
+    
+    void setSpecifyGroup(IMP_PLE::vec_pir_t (*p)()){
+        this->imp_pl.f_group = p();
+    }
+    
 private:
     bool IsMakeRequest(const char*, std::u32string&, const long=10L);
     void DevideIntoGroup(vecstr_t&, const std::u32string&);
@@ -161,9 +178,11 @@ private:
     std::u32string SetDataStructs(const ulong_t&, PLACE&, const std::u32string&);
     std::u32string DiBeFiel(const std::u32string&, std::u32string&);
     std::u32string RemExtChar(std::u32string);
+    std::u32string ReworkNa(const IMP_PLE::vec_pir_t&, const std::u32string&);
+    std::u32string ReworkSt(const IMP_PLE::vec_pir_t&, const std::u32string&, const std::u32string&);
     void SetErrorStatus(const AC_INFO);
-    void SetWait(const time_w&);
-    const time_w &GetWait() const;
+    void SetWait(const time_w_t&);
+    const time_w_t &GetWait() const;
 };
 
 #endif /* AcLight_hpp */
