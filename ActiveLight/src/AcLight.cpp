@@ -77,7 +77,7 @@ void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
                 std::u32string data = std::u32string(str32, start + size_f, end - (start + size_f));
                 std::u32string res  = this->SetDataStructs(index++, lig, data);
                 if (!res.empty()){
-                    city = res;
+                    city = this->ReworkNa(this->imp_pl.f_city, res);
                 }
             }
             inData[city].push_back(lig);
@@ -89,16 +89,16 @@ void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
 std::u32string AcLight::SetDataStructs(const ulong_t &ix, PLACE &d, const std::u32string &s){
     std::u32string inf;
     switch (ix) {
-        case 0: d.condition   = std::stoi(utf8::utf32to8(s)); break;
-        case 1: d.date        = s;                            break;
-        case 2: d.street      = this->DiBeFiel(s, inf);       break;
-        case 3: d.tg_group    = s;                            break;
-        case 4: d.tg_users    = std::stoi(utf8::utf32to8(s)); break;
-        case 5: d.longitude   = s;                            break;
-        case 6: d.latitude    = s;                            break;
-        case 7: d.device_type = std::stoi(utf8::utf32to8(s)); break;
-        case 8: d.group       = s;                            break;
-        case 9: d.online      = std::stoi(utf8::utf32to8(s)); break;
+        case 0: d.condition   = std::stoi(utf8::utf32to8(s));                      break;
+        case 1: d.date        = s;                                                 break;
+        case 2: d.street      = this->DiBeFiel(s, inf);                            break;
+        case 3: d.tg_group    = s;                                                 break;
+        case 4: d.tg_users    = std::stoi(utf8::utf32to8(s));                      break;
+        case 5: d.longitude   = s;                                                 break;
+        case 6: d.latitude    = s;                                                 break;
+        case 7: d.device_type = std::stoi(utf8::utf32to8(s));                      break;
+        case 8: d.group       = this->ReworkSt(this->imp_pl.f_group, d.street, s); break;
+        case 9: d.online      = std::stoi(utf8::utf32to8(s));                      break;
         default: break;
     }
     return inf;
@@ -157,14 +157,42 @@ std::u32string AcLight::RemExtChar(std::u32string cstr){
     return cstr;
 }
 
+std::u32string AcLight::ReworkNa(const IMP_PLE::vec_pir_t &vec, const std::u32string &d){
+    if (!vec.empty()){
+        auto it = std::find_if(vec.begin(), vec.end(), [&d](const std::pair<std::u32string, std::u32string> &pr){
+            return pr.first == d;
+        });
+        
+        if (it != vec.end()){
+            return it->second;
+        }
+    }
+    
+    return d;
+}
+
+std::u32string AcLight::ReworkSt(const IMP_PLE::vec_pir_t &vec, const std::u32string &stt, const std::u32string &def){
+    if (!vec.empty()){
+        auto it = std::find_if(vec.begin(), vec.end(), [&stt](const std::pair<std::u32string, std::u32string> &pr){
+            return pr.first == stt;
+        });
+        
+        if (it != vec.end()){
+            return it->second;
+        }
+    }
+    
+    return def;
+}
+
 void AcLight::SetErrorStatus(const AC_INFO st){
     this->error = st;
 }
 
-void AcLight::SetWait(const time_w &t){
+void AcLight::SetWait(const time_w_t &t){
     this->wait = t;
 }
 
-const AcLight::time_w &AcLight::GetWait() const{
+const AcLight::time_w_t &AcLight::GetWait() const{
     return this->wait;
 }
