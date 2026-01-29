@@ -17,6 +17,7 @@
 #include <ranges>
 #include <chrono>
 #include <utility>
+#include <set>
 
 constexpr const char     *API_SVBOT       = "https://api.svitlobot.in.ua/website/getChannelsForMap";
 constexpr const char32_t FIND_IF_QUANTY[] = { 0x2D, 0x31, 0x3B, 0x00 };
@@ -46,13 +47,16 @@ typedef struct{
     long           device_type;
     std::u32string group;
     long           online; // ?
+    std::u32string district;
 } PLACE;
 
 struct IMP_PLE{
     using vec_pir_t = std::vector<std::pair<std::u32string, std::u32string>>;
+    using set_vec_t = std::set<std::pair<std::u32string, vec_pir_t>>;
     
     vec_pir_t f_city{};
     vec_pir_t f_group{};
+    set_vec_t f_ditri{};
 };
 
 class AcLight{
@@ -101,6 +105,8 @@ public:
 
                 this->DevideIntoGroup(this->dtbt, res);
                 this->BreakDownTheLine(this->dtbt, this->um_data);
+                
+                this->AddStreetToTheDistrict(this->imp_pl.f_ditri, this->um_data);
             }
         }
         else{
@@ -163,12 +169,18 @@ public:
         this->um_data.clear();
     }
     
+    // A method for correcting city names. Often, an error in a city name results in the creation of a separate section on the map.
     void setCorrectCityNames(IMP_PLE::vec_pir_t (*p)()){
         this->imp_pl.f_city = p();
     }
     
+    // Method for setting a group for any address.
     void setSpecifyGroup(IMP_PLE::vec_pir_t (*p)()){
         this->imp_pl.f_group = p();
+    }
+    
+    void addDtreetToACityDistrict(const std::u32string &city, IMP_PLE::vec_pir_t (*p)()){
+        this->imp_pl.f_ditri.insert(std::make_pair(city, p()));
     }
     
 private:
@@ -183,6 +195,7 @@ private:
     void SetErrorStatus(const AC_INFO);
     void SetWait(const time_w_t&);
     const time_w_t &GetWait() const;
+    void AddStreetToTheDistrict(const IMP_PLE::set_vec_t&, un_map_t&);
 };
 
 #endif /* AcLight_hpp */
