@@ -80,6 +80,7 @@ void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
                     city = this->ReworkNa(this->imp_pl.f_city, res);
                 }
             }
+            lig.district.assign(U"-");
             inData[city].push_back(lig);
         });
         this->SetErrorStatus((inData.empty()) ? AC_INFO::AC_ERROR_PARSE : AC_INFO::AC_OK);
@@ -195,4 +196,23 @@ void AcLight::SetWait(const time_w_t &t){
 
 const AcLight::time_w_t &AcLight::GetWait() const{
     return this->wait;
+}
+
+void AcLight::AddStreetToTheDistrict(const IMP_PLE::set_vec_t &s_vec, un_map_t &stt){
+    if (this->isStatus() == AC_INFO::AC_OK && !s_vec.empty() && !stt.empty()){
+        std::ranges::for_each(s_vec.begin(), s_vec.end(), [&stt](const std::pair<std::u32string, IMP_PLE::vec_pir_t> &pir){
+            if (stt.contains(pir.first)){
+                std::vector<PLACE> &vec = stt[pir.first];
+                std::ranges::for_each(vec.begin(), vec.end(), [&pir](PLACE &p){
+                    auto it = std::find_if(pir.second.begin(), pir.second.end(), [&p](const std::pair<std::u32string, std::u32string> &pr){
+                        return p.street == pr.first;
+                    });
+                    
+                    if (it != pir.second.end()){
+                        p.district = it->second;
+                    }
+                });
+            }
+        });
+    }
 }
