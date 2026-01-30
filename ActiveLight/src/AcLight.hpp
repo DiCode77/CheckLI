@@ -147,6 +147,7 @@ public:
         return {};
     }
     
+    // I added this method and the next one so that I could display the entire list of cities or streets for a given city in order to see if any individual corrections were needed.
     void showAllСities(){
         if (!this->um_data.empty()){
             for (const auto &[key, val] : this->um_data){
@@ -169,17 +170,23 @@ public:
         this->um_data.clear();
     }
     
-    // A method for correcting city names. Often, an error in a city name results in the creation of a separate section on the map.
+    // A method for correcting city names. Often, an error in a city name results in the creation of a separate section on the map. Call once before updRequest().
     void setCorrectCityNames(IMP_PLE::vec_pir_t (*p)()){
         this->imp_pl.f_city = p();
     }
     
-    // Method for setting a group for any address.
+    // Method for setting a group for any address. Call once before updRequest().
     void setSpecifyGroup(IMP_PLE::vec_pir_t (*p)()){
         this->imp_pl.f_group = p();
     }
     
-    void addDtreetToACityDistrict(const std::u32string &city, IMP_PLE::vec_pir_t (*p)()){
+    /*
+     This method adds multiple additions of different specific cities, with a whole list of streets, i.e. if you need to determine which district a street belongs to, you need to transfer the street and district here, after which a search for the street in the specified city will take place. If such a street is found in the city, the district will be recorded there. This method must be called once before updRequest().
+     
+     The data will be automatically updated even with a new API request.
+     The main thing is not to forget to add new streets and the district to which they belong.
+     */
+    void addDistrictToStreet(const std::u32string &city, IMP_PLE::vec_pir_t (*p)()){
         this->imp_pl.f_ditri.insert(std::make_pair(city, p()));
     }
     
