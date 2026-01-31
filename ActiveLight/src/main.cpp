@@ -6,9 +6,13 @@
 //
 
 #include <iostream>
+#include "AcLight.hpp"
 
 int main(){
-    std::cout << "Hello World!" << std::endl;
-
+    AcLight ac;
+    
+    ac.updRequest();
+    ac.showAllСities();
+    
     return 0;
 }
