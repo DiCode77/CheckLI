@@ -1,6 +1,7 @@
 [requires]
 libcurl/8.17.0
 utfcpp/4.0.8
+nlohmann_json/3.12.0
 
 [generators]
 CMakeDeps
