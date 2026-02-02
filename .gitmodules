@@ -1,0 +1,3 @@
+[submodule "TgBot/libs/TGbot_cpp"]
+	path = TgBot/libs/TGbot_cpp
+	url = https://github.com/DiCode77/TGbot_cpp.git
