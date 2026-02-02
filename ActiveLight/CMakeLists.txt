@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.27)
 project(ActiveLight)
 
-set(SRC "${CMAKE_SOURCE_DIR}/src")
-set(EXA "${CMAKE_SOURCE_DIR}/examples")
+set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(EXA "${CMAKE_CURRENT_SOURCE_DIR}/examples")
 
 find_package(CURL REQUIRED)
 find_package(utf8cpp REQUIRED)

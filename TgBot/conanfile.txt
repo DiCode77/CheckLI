@@ -1,0 +1,7 @@
+[requires]
+libcurl/8.17.0
+utfcpp/4.0.8
+
+[generators]
+CMakeDeps
+CMakeToolchain
