@@ -2,3 +2,5 @@
 ActiveLight/.DS_Store
 ActiveLight/CMakeUserPresets.json
 ActiveLight/build/
+TgBot/CMakeUserPresets.json
+TgBot/build/
