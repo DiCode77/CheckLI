@@ -7,6 +7,104 @@
 
 #include "AcLight.hpp"
 
+void AcLight::updRequest(){
+    std::u32string res;
+    time_w_t       time;
+    bool           isOk = false;
+    
+    if (time == this->GetWait()){
+        isOk = true;
+    }
+    else{
+        time = std::chrono::steady_clock::now();
+        
+        // The request delay algorithm is necessary to protect yourself from IP blocking by the server.
+        if (static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time - this->GetWait()).count()) > REQUEST_DELAY){
+            isOk = true;
+        }
+        else{
+            isOk = false;
+        }
+    }
+
+    if (isOk){
+        if (this->IsMakeRequest(API_SVBOT, res) && this->isStatus() == AC_INFO::AC_OK){
+            this->SetWait(std::chrono::steady_clock::now()); // We save the time of the last successful response.
+            this->clear(); // After each new request, you need to clear the data buffer to avoid collisions.
+
+            this->DevideIntoGroup(this->dtbt, res);
+            this->BreakDownTheLine(this->dtbt, this->um_data);
+            
+            this->AddStreetToTheDistrict(this->imp_pl.f_ditri, this->um_data);
+        }
+    }
+    else{
+        this->SetErrorStatus(AC_INFO::AC_REQUEST_DELAY);
+    }
+}
+
+const AC_INFO &AcLight::isStatus() const{
+    return this->error;
+}
+
+const AcLight::ulong_t AcLight::getTotalCount() const{
+    return this->dtbt.size();
+}
+
+const AcLight::ulong_t AcLight::getTotalCountOfCity(const std::u32string &city){
+    return (this->um_data.contains(city)) ? this->um_data[city].size() : 0;
+}
+
+const AcLight::vec_place_t AcLight::getListByCity(const std::u32string &city){
+    if (!this->um_data.empty() && this->um_data.contains(city)){
+        return this->um_data[city];
+    }
+    return {};
+}
+
+const PLACE AcLight::getStructByCityOfIndex(const std::u32string &city, const AcLight::ulong_t &ix){
+    if (!this->um_data.empty() && this->um_data.contains(city)){
+        if (this->um_data[city].size() > ix){
+            return this->um_data[city].at(ix);
+        }
+    }
+    return {};
+}
+
+void AcLight::showAllСities(){
+    if (!this->um_data.empty()){
+        for (const auto &[key, val] : this->um_data){
+            printf("->%s<-\n", utf8::utf32to8(key).c_str());
+        }
+    }
+}
+
+void AcLight::showAllStreets(const std::u32string &city){
+    if (!this->um_data.empty() && this->um_data.contains(city)){
+        for (ulong_t i = 0; i < this->um_data[city].size(); i++){
+            printf("->%s<-\n", utf8::utf32to8(this->um_data[city].at(i).street).c_str());
+        }
+    }
+}
+
+void AcLight::clear(){
+    this->SetErrorStatus(AC_INFO::AC_NONE);
+    this->dtbt.clear();
+    this->um_data.clear();
+}
+
+void AcLight::setCorrectCityNames(IMP_PLE::vec_pir_t (*p)()){
+    this->imp_pl.f_city = p();
+}
+
+void AcLight::setSpecifyGroup(IMP_PLE::vec_pir_t (*p)()){
+    this->imp_pl.f_group = p();
+}
+
+void AcLight::addDistrictToStreet(const std::u32string &city, IMP_PLE::vec_pir_t (*p)()){
+    this->imp_pl.f_ditri.insert(std::make_pair(city, p()));
+}
+
 static AcLight::ulong_t WriteCallBack(void *contents, AcLight::ulong_t size, AcLight::ulong_t nmemb, void *userp){
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
