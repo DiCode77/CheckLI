@@ -26,7 +26,7 @@ constexpr const char32_t FIND_IF_NEXT[]   = { 0x2D, 0x3E, 0x00 };
 constexpr int            MAX_PARAMETERS   = 10;
 
 constexpr unsigned long  ACNPOS           = ~0;
-const     long           REQUEST_DELAY    = 30; // Specify in seconds. Requests to the server are allowed to be sent no more than once every 30 seconds.
+const     long           REQUEST_DELAY    = 60; // Specify in seconds. Requests to the server are allowed to be sent no more than once every 30 seconds.
 
 enum class AC_INFO{
     AC_NONE,
@@ -78,107 +78,34 @@ public:
     AcLight() : error(AC_INFO::AC_NONE){}
     
     // updating status information.
-    void updRequest(){
-        std::u32string res;
-        time_w_t       time;
-        bool           isOk = false;
-        
-        if (time == this->GetWait()){
-            isOk = true;
-        }
-        else{
-            time = std::chrono::steady_clock::now();
-            
-            // The request delay algorithm is necessary to protect yourself from IP blocking by the server.
-            if (static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time - this->GetWait()).count()) > REQUEST_DELAY){
-                isOk = true;
-            }
-            else{
-                isOk = false;
-            }
-        }
-
-        if (isOk){
-            if (this->IsMakeRequest(API_SVBOT, res) && this->isStatus() == AC_INFO::AC_OK){
-                this->SetWait(std::chrono::steady_clock::now()); // We save the time of the last successful response.
-                this->clear(); // After each new request, you need to clear the data buffer to avoid collisions.
-
-                this->DevideIntoGroup(this->dtbt, res);
-                this->BreakDownTheLine(this->dtbt, this->um_data);
-                
-                this->AddStreetToTheDistrict(this->imp_pl.f_ditri, this->um_data);
-            }
-        }
-        else{
-            this->SetErrorStatus(AC_INFO::AC_REQUEST_DELAY);
-        }
-    }
+    void updRequest();
     
     // Here we return the status of the program.
-    const AC_INFO &isStatus() const{
-        return this->error;
-    }
+    const AC_INFO &isStatus() const;
     
     // Returns the total number of all fireflies.
-    const ulong_t getTotalCount() const{
-        return this->dtbt.size();
-    }
+    const ulong_t getTotalCount() const;
     
     // Returns the total number of all fireflies in the city.
-    const ulong_t getTotalCountOfCity(const std::u32string &city){
-        return (this->um_data.contains(city)) ? this->um_data[city].size() : 0;
-    }
+    const ulong_t getTotalCountOfCity(const std::u32string&);
     
     // Returns a list of all available fireflies in the city.
-    const vec_place_t getListByCity(const std::u32string &city){
-        if (!this->um_data.empty() && this->um_data.contains(city)){
-            return this->um_data[city];
-        }
-        return {};
-    }
+    const vec_place_t getListByCity(const std::u32string&);
     
     // Returns a specific structure in the city.
-    const PLACE getStructByCityOfIndex(const std::u32string &city, const ulong_t &ix){
-        if (!this->um_data.empty() && this->um_data.contains(city)){
-            if (this->um_data[city].size() > ix){
-                return this->um_data[city].at(ix);
-            }
-        }
-        return {};
-    }
+    const PLACE getStructByCityOfIndex(const std::u32string&, const ulong_t&);
     
     // I added this method and the next one so that I could display the entire list of cities or streets for a given city in order to see if any individual corrections were needed.
-    void showAllСities(){
-        if (!this->um_data.empty()){
-            for (const auto &[key, val] : this->um_data){
-                printf("->%s<-\n", utf8::utf32to8(key).c_str());
-            }
-        }
-    }
+    void showAllСities();
+    void showAllStreets(const std::u32string&);
     
-    void showAllStreets(std::u32string city){
-        if (!this->um_data.empty() && this->um_data.contains(city)){
-            for (ulong_t i = 0; i < this->um_data[city].size(); i++){
-                printf("->%s<-\n", utf8::utf32to8(this->um_data[city].at(i).street).c_str());
-            }
-        }
-    }
-    
-    void clear(){
-        this->SetErrorStatus(AC_INFO::AC_NONE);
-        this->dtbt.clear();
-        this->um_data.clear();
-    }
+    void clear();
     
     // A method for correcting city names. Often, an error in a city name results in the creation of a separate section on the map. Call once before updRequest().
-    void setCorrectCityNames(IMP_PLE::vec_pir_t (*p)()){
-        this->imp_pl.f_city = p();
-    }
+    void setCorrectCityNames(IMP_PLE::vec_pir_t (*)());
     
     // Method for setting a group for any address. Call once before updRequest().
-    void setSpecifyGroup(IMP_PLE::vec_pir_t (*p)()){
-        this->imp_pl.f_group = p();
-    }
+    void setSpecifyGroup(IMP_PLE::vec_pir_t (*)());
     
     /*
      This method adds multiple additions of different specific cities, with a whole list of streets, i.e. if you need to determine which district a street belongs to, you need to transfer the street and district here, after which a search for the street in the specified city will take place. If such a street is found in the city, the district will be recorded there. This method must be called once before updRequest().
@@ -186,9 +113,7 @@ public:
      The data will be automatically updated even with a new API request.
      The main thing is not to forget to add new streets and the district to which they belong.
      */
-    void addDistrictToStreet(const std::u32string &city, IMP_PLE::vec_pir_t (*p)()){
-        this->imp_pl.f_ditri.insert(std::make_pair(city, p()));
-    }
+    void addDistrictToStreet(const std::u32string&, IMP_PLE::vec_pir_t (*)());
     
 private:
     bool IsMakeRequest(const char*, std::u32string&, const long=10L);
