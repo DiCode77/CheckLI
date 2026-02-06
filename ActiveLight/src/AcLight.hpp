@@ -87,13 +87,13 @@ public:
     const ulong_t getTotalCount() const;
     
     // Returns the total number of all fireflies in the city.
-    const ulong_t getTotalCountOfCity(const std::u32string&);
+    const ulong_t getTotalCountOfCity(const std::u32string&) const;
     
     // Returns a list of all available fireflies in the city.
-    const vec_place_t getListByCity(const std::u32string&);
+    const vec_place_t *getPlacesByCity(const std::u32string&) const;
     
     // Returns a specific structure in the city.
-    const PLACE getStructByCityOfIndex(const std::u32string&, const ulong_t&);
+    const PLACE *getPlacesByCityAndIndex(const std::u32string&, const ulong_t&) const;
     
     // I added this method and the next one so that I could display the entire list of cities or streets for a given city in order to see if any individual corrections were needed.
     void showAllСities();
