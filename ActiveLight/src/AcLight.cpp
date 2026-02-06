@@ -48,27 +48,30 @@ const AC_INFO &AcLight::isStatus() const{
 }
 
 const AcLight::ulong_t AcLight::getTotalCount() const{
-    return this->dtbt.size();
+    return static_cast<ulong_t>(this->dtbt.size());
 }
 
-const AcLight::ulong_t AcLight::getTotalCountOfCity(const std::u32string &city){
-    return (this->um_data.contains(city)) ? this->um_data[city].size() : 0;
-}
-
-const AcLight::vec_place_t AcLight::getListByCity(const std::u32string &city){
-    if (!this->um_data.empty() && this->um_data.contains(city)){
-        return this->um_data[city];
+const AcLight::ulong_t AcLight::getTotalCountOfCity(const std::u32string &city) const{
+    if (auto it = this->um_data.find(city); it != this->um_data.end()){
+        return static_cast<ulong_t>(it->second.size());
     }
-    return {};
+    return 0;
 }
 
-const PLACE AcLight::getStructByCityOfIndex(const std::u32string &city, const AcLight::ulong_t &ix){
-    if (!this->um_data.empty() && this->um_data.contains(city)){
-        if (this->um_data[city].size() > ix){
-            return this->um_data[city].at(ix);
+const AcLight::vec_place_t *AcLight::getPlacesByCity(const std::u32string &city) const{
+    if (auto it = this->um_data.find(city); it != this->um_data.end()){
+        return &it->second;
+    }
+    return nullptr;
+}
+
+const PLACE *AcLight::getPlacesByCityAndIndex(const std::u32string &city, const AcLight::ulong_t &ix) const{
+    if (const auto it = um_data.find(city); it != this->um_data.end()){
+        if (it->second.size() > ix){
+            return &it->second.at(ix);
         }
     }
-    return {};
+    return nullptr;
 }
 
 void AcLight::showAllСities(){
@@ -81,7 +84,7 @@ void AcLight::showAllСities(){
 
 void AcLight::showAllStreets(const std::u32string &city){
     if (!this->um_data.empty() && this->um_data.contains(city)){
-        for (ulong_t i = 0; i < this->um_data[city].size(); i++){
+        for (ulong_t i = 0; i < static_cast<ulong_t>(this->um_data[city].size()); i++){
             printf("->%s<-\n", utf8::utf32to8(this->um_data[city].at(i).street).c_str());
         }
     }
@@ -152,7 +155,7 @@ void AcLight::DevideIntoGroup(vecstr_t &inVec, const std::u32string &inData){
     
     while ((start = std::u32string(inData).find(FIND_IF_QUANTY, end)) != std::u32string::npos){
         end = std::u32string(inData).find(FIND_IF_QUANTY, start +1);
-        end = (end == std::u32string::npos && start < inData.size()) ? inData.size() : end;
+        end = static_cast<ulong_t>((end == std::u32string::npos && start < inData.size()) ? inData.size() : end);
         
         inVec.emplace_back(inData, start, end - start);
     }
@@ -167,7 +170,7 @@ void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
             ulong_t        index  = 0;
             PLACE          lig{};
             std::u32string city;
-            ulong_t        size_f = std::u32string(FIND_IF_GROUPS).size();
+            ulong_t        size_f = static_cast<ulong_t>(std::u32string(FIND_IF_GROUPS).size());
             
             while ((start = std::u32string(str32).find(FIND_IF_GROUPS, end)) != std::u32string::npos && index < MAX_PARAMETERS) {
                 end = std::u32string(str32).find(FIND_IF_GROUPS, start +1);
@@ -206,7 +209,7 @@ std::u32string AcLight::SetDataStructs(const ulong_t &ix, PLACE &d, const std::u
 std::u32string AcLight::DiBeFiel(const std::u32string &str, std::u32string &inf){
     std::u32string res;
     ulong_t en = str.find(FIND_IF_NEXT);
-    ulong_t sz = std::u32string(FIND_IF_NEXT).size();
+    ulong_t sz = static_cast<ulong_t>(std::u32string(FIND_IF_NEXT).size());
     
     if (en != std::u32string::npos){
         inf.assign(this->RemExtChar(std::u32string(str, 0, en)));
