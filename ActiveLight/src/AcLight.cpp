@@ -43,6 +43,20 @@ void AcLight::updRequest(){
     }
 }
 
+void AcLight::load(const std::u32string &data){
+    if (!data.empty()){
+        this->clear();
+        
+        this->DevideIntoGroup(this->dtbt, data);
+        this->BreakDownTheLine(this->dtbt, this->um_data);
+        
+        this->AddStreetToTheDistrict(this->imp_pl.f_ditri, this->um_data);
+    }
+    else{
+        this->SetErrorStatus(AC_INFO::AC_NONE_LOAD);
+    }
+}
+
 const AC_INFO &AcLight::isStatus() const{
     return this->error;
 }
