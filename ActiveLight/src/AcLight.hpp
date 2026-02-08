@@ -31,6 +31,7 @@ const     long           REQUEST_DELAY    = 60; // Specify in seconds. Requests 
 
 enum class AC_INFO{
     AC_NONE,
+    AC_NONE_LOAD,
     AC_OK,
     AC_REQUEST_DELAY,
     AC_ERROR_REQUEST,
@@ -80,6 +81,10 @@ public:
     
     // updating status information.
     void updRequest();
+    
+    // The load() method, which is necessary for manually loading the database, has no time limit for each new call to this method.
+    // Calling it will delete previously downloaded data.
+    void load(const std::u32string&);
     
     // Here we return the status of the program.
     const AC_INFO &isStatus() const;
