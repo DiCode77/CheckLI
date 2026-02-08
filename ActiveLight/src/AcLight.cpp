@@ -186,17 +186,33 @@ void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
             std::u32string city;
             ulong_t        size_f = static_cast<ulong_t>(std::u32string(FIND_IF_GROUPS).size());
             
-            while ((start = std::u32string(str32).find(FIND_IF_GROUPS, end)) != std::u32string::npos && index < MAX_PARAMETERS) {
+            while ((start = std::u32string(str32).find(FIND_IF_GROUPS, end)) != std::u32string::npos && index < MAX_PARAMETERS && this->isStatus() == AC_INFO::AC_OK) {
                 end = std::u32string(str32).find(FIND_IF_GROUPS, start +1);
                 
-                std::u32string data = std::u32string(str32, start + size_f, end - (start + size_f));
-                std::u32string res  = this->SetDataStructs(index++, lig, data);
-                if (!res.empty()){
-                    city = this->ReworkNa(this->imp_pl.f_city, res);
+                if (end == std::u32string::npos){
+                    this->clear();
+                    this->SetErrorStatus(AC_INFO::AC_ERROR_PARSE);
+                    break;
+                }
+                else{
+                    try{
+                        std::u32string data = std::u32string(str32, start + size_f, end - (start + size_f));
+                        std::u32string res  = this->SetDataStructs(index++, lig, data);
+                        if (!res.empty()){
+                            city = this->ReworkNa(this->imp_pl.f_city, res);
+                        }
+                    }catch (...){
+                        this->clear();
+                        this->SetErrorStatus(AC_INFO::AC_ERROR_PARSE);
+                        break;
+                    }
                 }
             }
-            lig.district.assign(U"-");
-            inData[city].push_back(lig);
+            
+            if (this->isStatus() == AC_INFO::AC_OK){
+                lig.district.assign(U"-");
+                inData[city].push_back(lig);
+            }
         });
         this->SetErrorStatus((inData.empty()) ? AC_INFO::AC_ERROR_PARSE : AC_INFO::AC_OK);
     }
