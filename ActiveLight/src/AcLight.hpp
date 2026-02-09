@@ -19,7 +19,7 @@
 #include <utility>
 #include <set>
 
-constexpr const char     *AC_VERSION      = "0.0.1";
+constexpr const char     *AC_VERSION      = "0.0.2";
 constexpr const char     *API_SVBOT       = "https://api.svitlobot.in.ua/website/getChannelsForMap";
 constexpr const char32_t FIND_IF_QUANTY[] = { 0x2D, 0x31, 0x3B, 0x00 };
 constexpr const char32_t FIND_IF_GROUPS[] = { 0x3B, 0x26, 0x26, 0x26, 0x3B, 0x00 };
@@ -120,6 +120,9 @@ public:
      The main thing is not to forget to add new streets and the district to which they belong.
      */
     void addDistrictToStreet(const std::u32string&, IMP_PLE::vec_pir_t (*)());
+    
+    // This method returns data received from the server in raw form. 
+    std::u32string dump() const;
     
 private:
     bool IsMakeRequest(const char*, std::u32string&, const long=10L);
