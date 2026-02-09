@@ -122,6 +122,19 @@ void AcLight::addDistrictToStreet(const std::u32string &city, IMP_PLE::vec_pir_t
     this->imp_pl.f_ditri.insert(std::make_pair(city, p()));
 }
 
+std::u32string AcLight::dump() const{
+    if (this->isStatus() == AC_INFO::AC_OK){
+        std::u32string str;
+        std::ranges::for_each(this->dtbt.cbegin(), this->dtbt.cend(), [&str](const std::u32string &data){
+            str.append(data);
+        });
+        
+        return str;
+    }
+    
+    return {};
+}
+
 static AcLight::ulong_t WriteCallBack(void *contents, AcLight::ulong_t size, AcLight::ulong_t nmemb, void *userp){
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
@@ -167,8 +180,8 @@ void AcLight::DevideIntoGroup(vecstr_t &inVec, const std::u32string &inData){
     ulong_t start = 0;
     ulong_t end   = 0;
     
-    while ((start = std::u32string(inData).find(FIND_IF_QUANTY, end)) != std::u32string::npos){
-        end = std::u32string(inData).find(FIND_IF_QUANTY, start +1);
+    while ((start = inData.find(FIND_IF_QUANTY, end)) != std::u32string::npos){
+        end = inData.find(FIND_IF_QUANTY, start +1);
         end = static_cast<ulong_t>((end == std::u32string::npos && start < inData.size()) ? inData.size() : end);
         
         inVec.emplace_back(inData, start, end - start);
@@ -186,8 +199,8 @@ void AcLight::BreakDownTheLine(const vecstr_t &inVec, un_map_t &inData){
             std::u32string city;
             ulong_t        size_f = static_cast<ulong_t>(std::u32string(FIND_IF_GROUPS).size());
             
-            while ((start = std::u32string(str32).find(FIND_IF_GROUPS, end)) != std::u32string::npos && index < MAX_PARAMETERS && this->isStatus() == AC_INFO::AC_OK) {
-                end = std::u32string(str32).find(FIND_IF_GROUPS, start +1);
+            while ((start = str32.find(FIND_IF_GROUPS, end)) != std::u32string::npos && index < MAX_PARAMETERS && this->isStatus() == AC_INFO::AC_OK) {
+                end = str32.find(FIND_IF_GROUPS, start +1);
                 
                 if (end == std::u32string::npos){
                     this->clear();
