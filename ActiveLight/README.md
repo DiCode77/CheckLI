@@ -5,8 +5,8 @@ ActiveLight is a program for processing and structuring incoming information. It
 In fact, this project is the basis for the development of other projects, as it will be used to obtain information about the availability of light.
 
 ## Requirements
-- c++20
-- CMake >= 3.27
+- c++23
+- CMake >= 3.25
 - Conan 2
 
 ## Technologies used
