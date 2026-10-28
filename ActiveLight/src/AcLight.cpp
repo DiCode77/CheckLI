@@ -317,6 +317,29 @@ std::u32string AcLight::ReworkNa(const IMP_PLE::vec_pir_t &vec, const std::u32st
 }
 
 std::u32string AcLight::ReworkSt(const IMP_PLE::vec_pir_t &vec, const std::u32string &stt, const std::u32string &def){
+    auto func = [&def]() -> std::u32string{
+        std::u32string str = def | std::views::filter([](const char32_t &ch32){
+            if ((ch32 >= 48 && ch32 <= 57) || ch32 == 46){
+                return true;
+            }
+            return false;
+        }) | std::ranges::to<std::u32string>();
+        
+        auto it = std::find_if(str.begin(), str.end(), [](const char32_t &ch32){
+            if (ch32 >= 48 && ch32 <= 57){
+                return true;
+            }
+            return false;
+        });
+        
+        if (it != str.end()){
+            if (it != str.begin()){
+                str.erase(str.begin(), it);
+            }
+        }
+        return str;
+    };
+    
     if (!vec.empty()){
         auto it = std::find_if(vec.begin(), vec.end(), [&stt](const std::pair<std::u32string, std::u32string> &pr){
             return pr.first == stt;
@@ -325,32 +348,9 @@ std::u32string AcLight::ReworkSt(const IMP_PLE::vec_pir_t &vec, const std::u32st
         if (it != vec.end()){
             return it->second;
         }
-    }else{
-        if (def != U"-"){
-            std::u32string str = def | std::views::filter([](const char32_t &ch32){
-                if ((ch32 >= 48 && ch32 <= 57) || ch32 == 46){
-                    return true;
-                }
-                return false;
-            }) | std::ranges::to<std::u32string>();
-            
-            auto it = std::find_if(str.begin(), str.end(), [](const char32_t &ch32){
-                if (ch32 >= 48 && ch32 <= 57){
-                    return true;
-                }
-                return false;
-            });
-            
-            if (it != str.end()){
-                if (it != str.begin()){
-                    str.erase(str.begin(), it);
-                }
-            }
-            return str;
-        }
     }
     
-    return def;
+    return (def != U"-") ? func() : def;
 }
 
 void AcLight::SetErrorStatus(const AC_INFO st){
