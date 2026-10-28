@@ -325,6 +325,29 @@ std::u32string AcLight::ReworkSt(const IMP_PLE::vec_pir_t &vec, const std::u32st
         if (it != vec.end()){
             return it->second;
         }
+    }else{
+        if (def != U"-"){
+            std::u32string str = def | std::views::filter([](const char32_t &ch32){
+                if ((ch32 >= 48 && ch32 <= 57) || ch32 == 46){
+                    return true;
+                }
+                return false;
+            }) | std::ranges::to<std::u32string>();
+            
+            auto it = std::find_if(str.begin(), str.end(), [](const char32_t &ch32){
+                if (ch32 >= 48 && ch32 <= 57){
+                    return true;
+                }
+                return false;
+            });
+            
+            if (it != str.end()){
+                if (it != str.begin()){
+                    str.erase(str.begin(), it);
+                }
+            }
+            return str;
+        }
     }
     
     return def;
